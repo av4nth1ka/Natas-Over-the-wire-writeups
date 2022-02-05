@@ -44,4 +44,64 @@ We we visit `http://natas3.natas.labs.overthewire.org/s3cr3t/`, we can see a fil
 Opening `users.txt` gives us the password.<br />
 `password: Z9tkRkWmpt9Qr7XrR5jWRkgOU901swEZ`<br />
 
+# Level 3->level 4
+
+link:http://natas4.natas.labs.overthewire.org/<br />
+user: natas4<br />
+pass: Z9tkRkWmpt9Qr7XrR5jWRkgOU901swEZ<br />
+
+When we login with the credentials, we get a message `Access disallowed. You are visiting from "http://natas4.natas.labs.overthewire.org/index.php" while authorized users should come only from "http://natas5.natas.labs.overthewire.org/"`.<br />
+When we open the link in burp, change the `Referer: http://natas5.natas.labs.overthewire.org/`. And the Forward this modified request.<br />
+Then we can find the message: `Access granted. The password for natas5 is iX6IOfmpN7AYOQGPwtn3fXpbaJVJcHfq`<br />
+`password: iX6IOfmpN7AYOQGPwtn3fXpbaJVJcHfq`<br />
+
+
+# Level 4-> Level 5
+
+link:http://natas5.natas.labs.overthewire.org/<br />
+user: natas5<br />
+password:iX6IOfmpN7AYOQGPwtn3fXpbaJVJcHfq<br />
+
+When we login with the above credentials, we get this message `Access disallowed. You are not logged in`<br />
+When we look into the cookies in the page, we can see a cookie named `loggedin` and its `value=0`. Lets try changing the `value=1` in cookie editor and refresh the page.<br />
+There we get this message : `Access granted. The password for natas6 is aGoY4q2Dc6MgDq4oL4YtoKtyAg9PeHa1`<br />
+So, `password: aGoY4q2Dc6MgDq4oL4YtoKtyAg9PeHa1`<br />
+
+
+# Level 5-> Level 6:
+
+Link:http://natas6.natas.labs.overthewire.org/
+user: natas6
+pass: aGoY4q2Dc6MgDq4oL4YtoKtyAg9PeHa1
+
+When we login with these credentials, we can see a form to submit some secret code.
+When we view the source page, we can see the following php code.
+```
+<?
+
+include "includes/secret.inc";
+
+    if(array_key_exists("submit", $_POST)) {
+        if($secret == $_POST['secret']) {
+        print "Access granted. The password for natas7 is <censored>";
+    } else {
+        print "Wrong secret";
+    }
+    }
+?>
+```
+When we visit `http://natas6.natas.labs.overthewire.org/includes/secret.inc`, we get the following secret code
+`secret:FOEIUWGHFEEUHOFUOIU`
+When we submit the secret code, we get the message `Access granted. The password for natas7 is 7z3hEENjQtflzgnT29q7wAvMNfZdh0i9`
+`password: 7z3hEENjQtflzgnT29q7wAvMNfZdh0i9`
+
+
+# Level 6-> level 7:
+
+link: http://natas7.natas.labs.overthewire.org
+user: natas7
+passw:7z3hEENjQtflzgnT29q7wAvMNfZdh0i9
+
+
+
 
