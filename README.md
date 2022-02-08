@@ -98,9 +98,76 @@ When we submit the secret code, we get the message `Access granted. The password
 
 # Level 6-> level 7:
 
-link: http://natas7.natas.labs.overthewire.org
-user: natas7
-passw:7z3hEENjQtflzgnT29q7wAvMNfZdh0i9
+link: http://natas7.natas.labs.overthewire.org<br />
+user: natas7<br />
+passw:7z3hEENjQtflzgnT29q7wAvMNfZdh0i9<br />
+When we log in with above credentials, we can see a page with `home` and `about` section. While viewing the page source, we can see a hint<br />
+`hint: password for webuser natas8 is in /etc/natas_webpass/natas8`<br />
+So, we click on `home`, we get the url as `http://natas7.natas.labs.overthewire.org/index.php?page=home`<br />
+So, changing the url to `http://natas7.natas.labs.overthewire.org/index.php?page=/etc/natas_webpass/natas8` will give the password<br />
+`password: DBfUBfqQG69KvJvJ1iAbMoIpwSNQ9bWe`<br />
+
+# Level 7 -> Level 8:
+
+link: http://natas8.natas.labs.overthewire.org
+user: natas8
+pass:DBfUBfqQG69KvJvJ1iAbMoIpwSNQ9bWe
+
+When we login with the above credentials, we can see a form to submit a secret code. Viewing the source code gives the following php code.
+```
+<?
+
+$encodedSecret = "3d3d516343746d4d6d6c315669563362";
+
+function encodeSecret($secret) {
+    return bin2hex(strrev(base64_encode($secret)));
+}
+
+if(array_key_exists("submit", $_POST)) {
+    if(encodeSecret($_POST['secret']) == $encodedSecret) {
+    print "Access granted. The password for natas9 is <censored>";
+    } else {
+    print "Wrong secret";
+    }
+}
+?>
+```
+In the above php code, 3 functions are being used. `Bin2hex, strrev and base64_encoding.`
+So, to find the secret code, we have to do these functions, in the reverse way, i.e `hex2bin, strrev, base64_decoding`
+So in terminal,
+```
+php -r 'echo strrev(hex2bin("3d3d516343746d4d6d6c315669563362"));' | base64 -d
+
+Output - oubWYf2kBq
+```
+So, Secret code=oubWYf2kBq
+Submitting the secret code will give the password for next level.
+`pass: W0mMhUcRRnG8dcghE4qvk3JA9lGt8nDl`
+
+# Level 8 -> level 9:
+
+link:http://natas9.natas.labs.overthewire.org/
+user: natas9
+pass:W0mMhUcRRnG8dcghE4qvk3JA9lGt8nDl
+
+ When we login with the above credentials, we get a page to submit something. `Find words containing: ______`
+ When we view the page source code, we get the following php code.
+ ```
+ <?
+$key = "";
+
+if(array_key_exists("needle", $_REQUEST)) {
+    $key = $_REQUEST["needle"];
+}
+
+if($key != "") {
+    passthru("grep -i $key dictionary.txt");
+}
+?>
+```
+
+
+
 
 
 
