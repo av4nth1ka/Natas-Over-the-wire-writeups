@@ -167,8 +167,8 @@ if($key != "") {
 ```
 + Here passthru() is used to execute external program(here grep command)
 + grep command filters the content of a file which makes our search easy.The 'grep -i' command filters output in a case-insensitive way.
-+ Syntax of grep: grep -i <searchWord> <fileName>  
-            here: grep -i $key dictionary.txt
++ Syntax of grep:  grep -i  'search word' 'filename'  
+            here:  grep -i $key dictionary.txt
 + So, we need to find the password for level 10, it is stored in /etc/natas_webpass/natas10
 + So, in the textbox we execute the following command,
     `; cat /etc/natas_webpass/natas10`
