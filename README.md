@@ -178,12 +178,45 @@ if($key != "") {
 ## Reference:
 + Passthru(): https://www.php.net/manual/en/function.passthru.php
 + grep command: https://www.javatpoint.com/linux-grep
++ chaining commands in linux: https://www.geeksforgeeks.org/chaining-commands-in-linux/
 
 
 # Level 9-> level 10
+
 user: natas10
 password:nOpp1igQAkUzaI1GUUjzn1bFVj7xCNzu
-link: 
+link:  http://natas10.natas.labs.overthewire.org
+
+While login with the above user and pass, we can see a textbox like last time, to enter `words containing:____`. Also written that `For security reasons, we now filter on certain characters`
+Checking the source code, we can see the following php code:
+```
+<?
+$key = "";
+
+if(array_key_exists("needle", $_REQUEST)) {
+    $key = $_REQUEST["needle"];
+}
+
+if($key != "") {
+    if(preg_match('/[;|&]/',$key)) {
+        print "Input contains an illegal character!";
+    } else {
+        passthru("grep -i $key dictionary.txt");
+    }
+}
+?>
+```
++ Given that `/[;|&]/` these characters cannot be present in the text we input.
++ So, we input the following payload:
+  `. etc/webpass_natas/natas11` and we get the password for next level
+ + `password: U82q5TCMMQ9xuFoI3dYX61s7OZD9JKoK `
+ 
+ ## Reference
++ preg_match(): https://www.php.net/manual/en/function.preg-match.php
+
+
+
+
 
     
 
