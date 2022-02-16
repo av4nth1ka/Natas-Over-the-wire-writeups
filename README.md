@@ -174,6 +174,17 @@ if($key != "") {
     `; cat /etc/natas_webpass/natas10`
 + We use (;) semi colon to execute multiple commands in a single line, So after submitting the above command, we get the password of level 10
 + `password: nOpp1igQAkUzaI1GUUjzn1bFVj7xCNzu`
+
+## Reference:
++ Passthru(): https://www.php.net/manual/en/function.passthru.php
++ grep command: https://www.javatpoint.com/linux-grep
+
+
+# Level 9-> level 10
+user: natas10
+password:nOpp1igQAkUzaI1GUUjzn1bFVj7xCNzu
+link: 
+
     
 
 
