@@ -165,7 +165,16 @@ if($key != "") {
 }
 ?>
 ```
-
++ Here passthru() is used to execute external program(here grep command)
++ grep command filters the content of a file which makes our search easy.The 'grep -i' command filters output in a case-insensitive way.
++ Syntax of grep: grep -i <searchWord> <fileName>  
+            here: grep -i $key dictionary.txt
++ So, we need to find the password for level 10, it is stored in /etc/natas_webpass/natas10
++ So, in the textbox we execute the following command,
+    `; cat /etc/natas_webpass/natas10`
++ We use (;) semi colon to execute multiple commands in a single line, So after submitting the above command, we get the password of level 10
++ `password: nOpp1igQAkUzaI1GUUjzn1bFVj7xCNzu`
+    
 
 
 
