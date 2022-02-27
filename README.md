@@ -281,7 +281,24 @@ if($data["showpassword"] == "yes") {
 ```
 + When we checked for the cookies, we saw cookie named data with the value :ClVLIh4ASCsCBE8lAxMacFMZV2hdVVotEhhUJQNVAmhSEV4sFxFeaAw%3D
 + Now we need to url decode this value and we get it as: ClVLIh4ASCsCBE8lAxMacFMZV2hdVVotEhhUJQNVAmhSEV4sFxFeaAw=
-+ 
++ Now we need to json_encode the following array,
+  `array( "showpassword"=>"yes", "bgcolor"=>"#ffffff")`
+  For that we run the following php command,
+  ```
+  <?php
+	echo json_encode(array( "showpassword"=>"yes", "bgcolor"=>"#ffffff"));
+  ?>
+  ```
+  It gives `{"showpassword":"no","bgcolor":"#ffffff"}`
+ + Next we do the xor encryption, using `{"showpassword":"no","bgcolor":"#ffffff"}` as the key.
+ + So, we get `qw8Jqw8Jqw8Jqw8Jqw8Jqw8Jqw8Jqw8Jqw8Jqw8Jq`. ( the key is smaller than the plaintext it is repeated, so from that we can infer that the key is `qw8J`.
+ + Now we json_encode `array( "showpassword"=>"yes", "bgcolor"=>"#ffffff")` and we get `{"showpassword":"yes","bgcolor":"#ffffff"}`
+ + We xor encrypt the above obtained json encode with the key `qw8J` and then base64_encode it to get the following value
+   `ClVLIh4ASCsCBE8lAxMacFMOXTlTWxooFhRXJh4FGnBTVF4sFxFeLFMK`
+ + Then we change the above obtained value in the cookie and get the password
+   `The password for natas12 is EDXp0pS26wLKHZy1rDBPUZk0RKfLGIR3`
+   
+  
 
 
 
