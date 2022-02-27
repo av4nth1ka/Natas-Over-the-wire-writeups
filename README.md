@@ -270,7 +270,18 @@ saveData($data);
 
 ?>
 ```
-+
++ All we want to do is to make `show password` = true, and we get the password
+```
+<?
+if($data["showpassword"] == "yes") {
+    print "The password for natas12 is <censored><br>";
+}
+
+?>
+```
++ When we checked for the cookies, we saw cookie named data with the value :ClVLIh4ASCsCBE8lAxMacFMZV2hdVVotEhhUJQNVAmhSEV4sFxFeaAw%3D
++ Now we need to url decode this value and we get it as: ClVLIh4ASCsCBE8lAxMacFMZV2hdVVotEhhUJQNVAmhSEV4sFxFeaAw=
++ 
 
 
 
