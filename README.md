@@ -350,9 +350,24 @@ if(array_key_exists("filename", $_POST)) {
     }
 } else {
 ?>
+<form enctype="multipart/form-data" action="index.php" method="POST">
+<input type="hidden" name="MAX_FILE_SIZE" value="1000" />
+<input type="hidden" name="filename" value="<? print genRandomString(); ?>.jpg" />
+Choose a JPEG to upload (max 1KB):<br/>
+<input name="uploadedfile" type="file" /><br />
+<input type="submit" value="Upload File" />
+</form>
+<? } ?>
+<div id="viewsource"><a href="index-source.html">View sourcecode</a></div>
+</div>
+</body>
+</html>
 ```
 
-   
++ pathinfo()-    The pathinfo() function returns information about a file path.
+https://www.w3schools.com/php/func_filesystem_pathinfo.asp
++ move_uploaded_file- https://www.w3schools.com/php/func_filesystem_move_uploaded_file.asp
++ 
   
 
 
