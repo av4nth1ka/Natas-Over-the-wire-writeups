@@ -383,6 +383,22 @@ Here, shell_exec() is used to execute command via shell and return the complete 
 When we upload the file `natas13.php`, click on the link to your file so the webserver executes the script you wrote. Then we could find our password.<br>
 `The password for natas13: jmLTY0qiPZBbaKc9341cqPQZBJv7MQbY`
   
+# Level 12->Level13
+
+user: natas13
+password:jmLTY0qiPZBbaKc9341cqPQZBJv7MQbY
+Level 12 and 13 are kinda similar. The only difference is that the file checks for a image signature using the function `exif_imagetype()`.
+Exif_imagetype():https://www.php.net/manual/en/function.exif-imagetype.php
+The code looks like:
+```
+else if (! exif_imagetype($_FILES['uploadedfile']['tmp_name'])) 
+{
+        echo "File is not an image";
+}
+```
+Reading through the source code, we can find that there is no check for the file extension. The code reads the first bytes of the image and checks its signature.
+So, we should try to fake an image signature. As it not looking for file extensions, we can upload a .php file, like last level.  So to pass the exif_imagetype function check, our file must start with the magic number of a supported image format.
+
 
 
 
