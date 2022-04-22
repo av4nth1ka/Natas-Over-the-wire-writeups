@@ -891,7 +891,10 @@ if(array_key_exists("name", $_SESSION)) {
 
 ?>
 ```
++source code looks like the sessions are handled by session_set_save_handler and are saved in a directory manually.
 
+References:
++ https://www.php.net/manual/en/function.session-set-save-handler.php
 + Username: natas21
 Password: IFekPyrQXftziDEsUr3x21sYuahypdgJ
 
