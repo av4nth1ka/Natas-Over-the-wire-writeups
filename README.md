@@ -891,12 +891,102 @@ if(array_key_exists("name", $_SESSION)) {
 
 ?>
 ```
++ There is a of my--- functions.
 +source code looks like the sessions are handled by session_set_save_handler and are saved in a directory manually.
-
++ session_set_save_handler sets user-level session storage functions.
++ In `my-write` function,for each key/value pair in $_SESSION it "<key> <value>". SO, in a file, a mywrite function will store session variable one per line.
+```
+foreach($_SESSION as $key => $value) {
+debug("$key => $value");
+$data .= "$key $value\n";
+}
+```
++ In `myread` function, it takes a file and, expecting space-delimited session variables one per line, explodes it by line, and then explodes each line into two pieces by a space. 
++ SO, we need to dump the password by getting a session variable named admin and satisfy the following condition:
+	`if($_SESSION and array_key_exists("admin", $_SESSION) and $_SESSION["admin"] == 1)`
++ Vulnerability is in `my write function`.
++ http://natas20.natas.labs.overthewire.org/index.php?debug=true&name=admin%0Aadmin%201
+	The above request when send twice will get the password for the next level.
+	
 References:
 + https://www.php.net/manual/en/function.session-set-save-handler.php
-+ Username: natas21
++ Explode function: https://www.php.net/manual/en/function.explode.php
+Username: natas21
 Password: IFekPyrQXftziDEsUr3x21sYuahypdgJ
+	
+# level 20 -> 21:
+Logging in with the credentials, will give a page which says:
+	```
+	Note: this website is colocated with http://natas21-experimenter.natas.labs.overthewire.org
+
+You are logged in as a regular user. Login as an admin to retrieve credentials for natas22.
+```
++ Colocated means sharing a location.
++ source code given:
+	```
+	<?
+
+function print_credentials() { /* {{{ */
+    if($_SESSION and array_key_exists("admin", $_SESSION) and $_SESSION["admin"] == 1) {
+    print "You are an admin. The credentials for the next level are:<br>";
+    print "<pre>Username: natas22\n";
+    print "Password: <censored></pre>";
+    } else {
+    print "You are logged in as a regular user. Login as an admin to retrieve credentials for natas22.";
+    }
+}
+/* }}} */
+
+session_start();
+print_credentials();
+
+?>
+```
++ This page check for session cookie ‘admin’ to see if you are admin or not. But we dont have an input field. 
++ THis page shows another page which was hosted on the same server. It is having an input field and looking at the source code it doesn't filters anything before copying the variables from $_REQUEST to $_SESSION.
++ Like last time,if we get the $_SESSION variable key to admin and its value to 1 we have won.
++ php code of the 2nd page:
+```
+	<?  
+
+session_start();
+
+// if update was submitted, store it
+if(array_key_exists("submit", $_REQUEST)) {
+    foreach($_REQUEST as $key => $val) {
+    $_SESSION[$key] = $val;
+    }
+}
+
+if(array_key_exists("debug", $_GET)) {
+    print "[DEBUG] Session contents:<br>";
+    print_r($_SESSION);
+}
+
+// only allow these keys
+$validkeys = array("align" => "center", "fontsize" => "100%", "bgcolor" => "yellow");
+$form = "";
+
+$form .= '<form action="index.php" method="POST">';
+foreach($validkeys as $key => $defval) {
+    $val = $defval;
+    if(array_key_exists($key, $_SESSION)) {
+    $val = $_SESSION[$key];
+    } else {
+    $_SESSION[$key] = $val;
+    }
+    $form .= "$key: <input name='$key' value='$val' /><br>";
+}
+$form .= '<input type="submit" name="submit" value="Update" />';
+$form .= '</form>';
+
+$style = "background-color: ".$_SESSION["bgcolor"]."; text-align: ".$_SESSION["align"]."; font-size: ".$_SESSION["fontsize"].";";
+$example = "<div style='$style'>Hello world!</div>";
+
+?>
+	```
+
+	
 
 
 
