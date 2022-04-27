@@ -943,7 +943,7 @@ print_credentials();
 ?>
 ```
 + This page check for session cookie ‘admin’ to see if you are admin or not. But we dont have an input field. 
-+ THis page shows another page which was hosted on the same server. It is having an input field and looking at the source code it doesn't filters anything before copying the variables from $_REQUEST to $_SESSION.
++ THis page shows another page which was hosted on the same server.We can login to that page with the credentials we have for level 21. It is having an input field and looking at the source code it doesn't filters anything before copying the variables from $_REQUEST to $_SESSION.
 + Like last time,if we get the $_SESSION variable key to admin and its value to 1 we have won.
 + php code of the 2nd page:
 ```
@@ -985,6 +985,52 @@ $example = "<div style='$style'>Hello world!</div>";
 
 ?>
 	```
++This show if admin key is set to 1 in the request parameter then the session sets the admin key’s value to 1. First cookie from first site was copied to the other site so that the changes in session can be reflected on the other site.
++ So, in burp, send a post request to the second page.(note: remove the cookie header so that we will get a fresh session cookie in the response).
+	`align=center&fontsize=100%25&bgcolor=yellow&submit=Update&admin=1`
++ SO, we will get a new phpsessid in the response. Copy paste the session cookie in the main page(first page) and get the password for the next level.
+Username: natas22
+Password: chG9fbe1Tq2eWVMgjYYD1MsfIvN461kJ
+
+# Level 22-> level 23 
+After logging in with the above credentials,we will get a page which have a like to see the source code.
++ Checking the source code gives:
+	```
+	<?
+    if(array_key_exists("revelio", $_GET)) {
+    print "You are an admin. The credentials for the next level are:<br>";
+    print "<pre>Username: natas23\n";
+    print "Password: <censored></pre>";
+    }
+?>
+	```
++ IN burp, send revelio as $_GET parameter and intercept the response using burp to get the credentials. 
+	`GET /?revelio HTTP/1.1`
+Username: natas23
+Password: D0vlad33nQF0Hz2EP255TP5wSW9ZsRSE
+	
+# Level 23->level 24
++ WHen we login with the above credentials, we get a page which has an input field to insert password.
++SOurce code given:
+	```
+	<?php
+    if(array_key_exists("passwd",$_REQUEST)){
+        if(strstr($_REQUEST["passwd"],"iloveyou") && ($_REQUEST["passwd"] > 10 )){
+            echo "<br>The credentials for the next level are:<br>";
+            echo "<pre>Username: natas24 Password: <censored></pre>";
+        }
+        else{
+            echo "<br>Wrong!<br>";
+        }
+    }
+    // morla / 10111
+?>  
+	```
++ Here, there is a check for the password length. But after looking at the PHP documentation it seems that strstr() “Find the first occurrence of a string”, so the string does not need to be equals to iloveyou, it justs need to be present into the string. Then, to bypass the second part of the string, I just added some number in front of the string, like that : 123iloveyou. Also, it checks the first two numbers of the string only. For eg: if we give `10iloveyou` it gives the msg wrong. But if we give `11iloveyou`, It gives the password. 
++ Username: natas24 
+Password: OsRmXFguozKpTZZ5X14zNO43379LZveg
+	
+
 
 	
 
