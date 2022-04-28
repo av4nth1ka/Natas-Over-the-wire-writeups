@@ -984,7 +984,7 @@ $style = "background-color: ".$_SESSION["bgcolor"]."; text-align: ".$_SESSION["a
 $example = "<div style='$style'>Hello world!</div>";
 
 ?>
-	```
+```
 +This show if admin key is set to 1 in the request parameter then the session sets the admin key’s value to 1. First cookie from first site was copied to the other site so that the changes in session can be reflected on the other site.
 + So, in burp, send a post request to the second page.(note: remove the cookie header so that we will get a fresh session cookie in the response).
 	`align=center&fontsize=100%25&bgcolor=yellow&submit=Update&admin=1`
@@ -995,7 +995,7 @@ Password: chG9fbe1Tq2eWVMgjYYD1MsfIvN461kJ
 # Level 22-> level 23 
 After logging in with the above credentials,we will get a page which have a like to see the source code.
 + Checking the source code gives:
-	```
+```
 	<?
     if(array_key_exists("revelio", $_GET)) {
     print "You are an admin. The credentials for the next level are:<br>";
@@ -1025,7 +1025,7 @@ Password: D0vlad33nQF0Hz2EP255TP5wSW9ZsRSE
     }
     // morla / 10111
 ?>  
-	```
+```
 + Here, there is a check for the password length. But after looking at the PHP documentation it seems that strstr() “Find the first occurrence of a string”, so the string does not need to be equals to iloveyou, it justs need to be present into the string. Then, to bypass the second part of the string, I just added some number in front of the string, like that : 123iloveyou. Also, it checks the first two numbers of the string only. For eg: if we give `10iloveyou` it gives the msg wrong. But if we give `11iloveyou`, It gives the password. 
 + Username: natas24 
 Password: OsRmXFguozKpTZZ5X14zNO43379LZveg
