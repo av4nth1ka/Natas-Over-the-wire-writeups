@@ -992,7 +992,7 @@ $example = "<div style='$style'>Hello world!</div>";
 Username: natas22
 Password: chG9fbe1Tq2eWVMgjYYD1MsfIvN461kJ
 
-# Level 22-> level 23 
+# Level 21-> level 22 
 After logging in with the above credentials,we will get a page which have a like to see the source code.
 + Checking the source code gives:
 ```
@@ -1009,7 +1009,7 @@ After logging in with the above credentials,we will get a page which have a like
 Username: natas23
 Password: D0vlad33nQF0Hz2EP255TP5wSW9ZsRSE
 	
-# Level 23->level 24
+# Level 22->level 23
 + WHen we login with the above credentials, we get a page which has an input field to insert password.
 +SOurce code given:
 ```
