@@ -1003,7 +1003,7 @@ After logging in with the above credentials,we will get a page which have a like
     print "Password: <censored></pre>";
     }
 ?>
-	```
+```
 + IN burp, send revelio as $_GET parameter and intercept the response using burp to get the credentials. 
 	`GET /?revelio HTTP/1.1`
 Username: natas23
@@ -1012,7 +1012,7 @@ Password: D0vlad33nQF0Hz2EP255TP5wSW9ZsRSE
 # Level 23->level 24
 + WHen we login with the above credentials, we get a page which has an input field to insert password.
 +SOurce code given:
-	```
+```
 	<?php
     if(array_key_exists("passwd",$_REQUEST)){
         if(strstr($_REQUEST["passwd"],"iloveyou") && ($_REQUEST["passwd"] > 10 )){
