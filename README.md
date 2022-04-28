@@ -1031,6 +1031,41 @@ Password: D0vlad33nQF0Hz2EP255TP5wSW9ZsRSE
 Password: OsRmXFguozKpTZZ5X14zNO43379LZveg
 	
 
+# Level 23 -> Level 24
+
+After logging with the credentials,we can see a similar page like last level. Source code is given:
+```
+	<?php
+    if(array_key_exists("passwd",$_REQUEST)){
+        if(!strcmp($_REQUEST["passwd"],"<censored>")){
+            echo "<br>The credentials for the next level are:<br>";
+            echo "<pre>Username: natas25 Password: <censored></pre>";
+        }
+        else{
+            echo "<br>Wrong!<br>";
+        }
+    }
+    // morla / 10111
+?>  
+```
++The official documentation for strcmp states that if the strings match, a 0 will be returned, otherwise a positive or negative number will be returned.
+
+A result of 0 would be interpreted as false. By NOT’ing false we get true. This true value would be evaluated by the if statement and the program would then print the credentials. Whereas a result of any number besides 0 is interpreted as true, and NOT’d to false. This false value would cause the program would move to the else clause and print “Wrong!” At least that’s what the intent was.
+
++ So, 0 can be printed if the strings are equal,but there are still other ways to give 0 as output.
++ One way is comparing an array to a string. The result is NULL and a warning is displayed. NULL is evaluated to be 0.
++ ANother way is that, when we compare array with zero, it will also return null, evaluated to 0.
++ So modifying the url with the following way can print out the credentials,
+ http://natas24.natas.labs.overthewire.org/?passwd[]=abcd
+ http://natas24.natas.labs.overthewire.org/?passwd[]=0
++ Username: natas25 
+  Password: GHF6X7YwACaYYssHVY05cFq83hRktl4c
+
+## Reference:
+https://www.php.net/manual/en/function.strcmp.php
+https://marcosvalle.github.io/ctf/php/2016/05/12/php-comparison-vlun.html
+	
+# Level 24 -> Level 25:
 
 	
 
