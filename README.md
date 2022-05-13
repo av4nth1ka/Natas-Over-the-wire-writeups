@@ -1124,7 +1124,14 @@ Source code is given,
 ?>
 ```
 + Vulnerability is in `setLanguage()` function. 
-+ Opening the page in web,
++  But if a user chooses a language the safeinclude function that firstly checks for directory traversal attempts and tries to mitigate it. It does by removing any occurrence of ‘../’ in the passed parameter. Since this is done only once, we can pass something like ‘....//’ that will before ‘../’ after removing single occurrence of ‘../’. Secondly if the attacker tries to access any file with name ‘natas_webpass’ in it it will block that attempt.
++ The script does not do any checks on $_SERVER[‘HTTP_USER_AGENT’] field. It gets appended to the log file.
++ So, we can give the `user-agent` as : <?php echo file_get_contents('/etc/natas_webpass/natas26');?>
++ So, when we change the user-agent in the burp, we wil get a phpsessid, copy it and paste it in the url as follows:
+`/?lang=....//logs/natas25_6kks2chjg2achsrrhmnq1o3hc2.log `
++ THe last part of the code shows how the url must be given.
+Sending a burp request on the above url will give us the password for next level.
+`password: oGgWAJ7zcGT28vYazGo4rkhOPDhBu34T`
 	
 
 	
