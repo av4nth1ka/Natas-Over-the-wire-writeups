@@ -1288,10 +1288,132 @@ print base64_encode(serialize($new))."\n";
 password: 55TBjpPZUUJgVP5b3BnbG6ON9uDPVzCJ
 
 # References:
-https://medium.com/swlh/exploiting-php-deserialization-56d71f03282a
+https://medium.com/swlh/exploiting-php-deserialization-56d71f03282a <br>
 https://www.php.net/manual/en/function.file-get-contents.php
 
+# Level 26 -> Level 27
+
+After logging into with the above credentials, we can see a username and password field.
++ SOurce code is given,
+```
+<?
+
+// morla / 10111
+// database gets cleared every 5 min 
+
+
+/*
+CREATE TABLE `users` (
+  `username` varchar(64) DEFAULT NULL,
+  `password` varchar(64) DEFAULT NULL
+);
+*/
+
+
+function checkCredentials($link,$usr,$pass){
+ 
+    $user=mysql_real_escape_string($usr);
+    $password=mysql_real_escape_string($pass);
+    
+    $query = "SELECT username from users where username='$user' and password='$password' ";
+    $res = mysql_query($query, $link);
+    if(mysql_num_rows($res) > 0){
+        return True;
+    }
+    return False;
+}
+
+
+function validUser($link,$usr){
+    
+    $user=mysql_real_escape_string($usr);
+    
+    $query = "SELECT * from users where username='$user'";
+    $res = mysql_query($query, $link);
+    if($res) {
+        if(mysql_num_rows($res) > 0) {
+            return True;
+        }
+    }
+    return False;
+}
+
+
+function dumpData($link,$usr){
+    
+    $user=mysql_real_escape_string($usr);
+    
+    $query = "SELECT * from users where username='$user'";
+    $res = mysql_query($query, $link);
+    if($res) {
+        if(mysql_num_rows($res) > 0) {
+            while ($row = mysql_fetch_assoc($res)) {
+                // thanks to Gobo for reporting this bug!  
+                //return print_r($row);
+                return print_r($row,true);
+            }
+        }
+    }
+    return False;
+}
+
+
+function createUser($link, $usr, $pass){
+
+    $user=mysql_real_escape_string($usr);
+    $password=mysql_real_escape_string($pass);
+    
+    $query = "INSERT INTO users (username,password) values ('$user','$password')";
+    $res = mysql_query($query, $link);
+    if(mysql_affected_rows() > 0){
+        return True;
+    }
+    return False;
+}
+
+
+if(array_key_exists("username", $_REQUEST) and array_key_exists("password", $_REQUEST)) {
+    $link = mysql_connect('localhost', 'natas27', '<censored>');
+    mysql_select_db('natas27', $link);
+   
+
+    if(validUser($link,$_REQUEST["username"])) {
+        //user exists, check creds
+        if(checkCredentials($link,$_REQUEST["username"],$_REQUEST["password"])){
+            echo "Welcome " . htmlentities($_REQUEST["username"]) . "!<br>";
+            echo "Here is your data:<br>";
+            $data=dumpData($link,$_REQUEST["username"]);
+            print htmlentities($data);
+        }
+        else{
+            echo "Wrong password for user: " . htmlentities($_REQUEST["username"]) . "<br>";
+        }        
+    } 
+    else {
+        //user doesn't exist
+        if(createUser($link,$_REQUEST["username"],$_REQUEST["password"])){ 
+            echo "User " . htmlentities($_REQUEST["username"]) . " was created!";
+        }
+    }
+
+    mysql_close($link);
+} else {
+?>
+```
++ So, in the username and password field, when we input anything(for eg: username=admin and password=admin), it shows `user admin was created`.
++ When we enter a user with wrong password, it shows, `wrong password for user`.
++ WHen we enter the username and password crrct, it gives a message, `welcome user!`.
++ Looking at the source code, we can see that it may feel as an sql injection challenge. As the input is taken using `mysql_real_escape_string()`, sql injection cannot taken place.
++ Given the query used to create the table, we can see that the size of the username and password should be 64.
++ So, trying what happens if we exceeds the limit of size.
++ So, I tried inserting username as: `natas28                                                            a` and password as empty, we can see that the user will get created. And when we login with username:natas28 and password as empty, we can see that the password gets dumped.
++ Note that `For VARCHAR columns, trailing spaces in excess of the column length are truncated prior to insertion and a warning is generated, regardless of the SQL mode in use.`.
++ When we login with the username: natas28 and password as empty we get the password for the next level.
++ `password: JWwR438wkgTsNKBbcJoowyysdM82YjeF`
 	
+# References:
++ https://dev.mysql.com/doc/refman/5.7/en/char.html
+
 
 	
 
